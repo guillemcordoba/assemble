@@ -1,9 +1,15 @@
 import { Record, ActionHash, EntryHash, AgentPubKey } from '@holochain/client';
 
-export interface Offer { 
-  description: string
-;
+export interface Slot {
+  title: string;
+  description: string;
+  required: boolean
+}
 
-  title: string
-;
+export interface Offer { 
+  description: string;
+
+  title: string;
+  
+  slots: Array<Slot>;
 }

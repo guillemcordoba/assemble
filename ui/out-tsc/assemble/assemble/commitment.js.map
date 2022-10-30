@@ -1,0 +1,1 @@
+{"version":3,"file":"commitment.js","sourceRoot":"","sources":["../../../src/assemble/assemble/commitment.ts"],"names":[],"mappings":"","sourcesContent":["import { Record, ActionHash, EntryHash, AgentPubKey } from '@holochain/client';\nimport { Slot } from './offer';\n\nexport interface Commitment { \n  offer_hash: ActionHash;\n  slots: Array<Slot>\n}\n"]}

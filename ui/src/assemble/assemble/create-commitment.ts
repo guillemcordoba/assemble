@@ -11,13 +11,8 @@ export class CreateCommitment extends LitElement {
   @property()
   offerHash!: ActionHash;
 
-  @state()
-  _offerHash: ActionHash
- | undefined;
   isCommitmentValid() {
-    return 
-    	this._offerHash
-    ;
+    return     	this.offerHash ;
   }
 
   @contextProvided({ context: appWebsocketContext })
@@ -30,8 +25,8 @@ export class CreateCommitment extends LitElement {
     const cellData = this.appInfo.cell_data.find((c: InstalledCell) => c.role_id === 'assemble')!;
 
     const commitment: Commitment = { 
-        offer_hash: this._offerHash!,
-      offer: this.offer!,
+        offer_hash: this.offerHash!,
+      slots: []
     };
 
     const record: Record = await this.appWebsocket.callZome({

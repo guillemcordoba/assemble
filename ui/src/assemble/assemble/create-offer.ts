@@ -12,15 +12,13 @@ import '@material/mwc-textfield';
 export class CreateOffer extends LitElement {
 
   @state()
-  _description: string
- | undefined;
+  _description: string | undefined;
+  
   @state()
-  _title: string
- | undefined;
+  _title: string | undefined;
+  
   isOfferValid() {
-    return 
-    	this._description && 
-    
+    return     	this._description &&    
     	this._title
     ;
   }
@@ -37,6 +35,7 @@ export class CreateOffer extends LitElement {
     const offer: Offer = { 
         description: this._description!,
         title: this._title!,
+      slots: []
     };
 
     const record: Record = await this.appWebsocket.callZome({

@@ -1,0 +1,1 @@
+{"version":3,"file":"promise.js","sourceRoot":"","sources":["../../../src/assemble/assemble/promise.ts"],"names":[],"mappings":"","sourcesContent":["import { Record, ActionHash, EntryHash, AgentPubKey } from '@holochain/client';\n\nexport interface Promise { \n  offer_hash: ActionHash;\n  commitment_hashes: Array<ActionHash>;\n}\n"]}

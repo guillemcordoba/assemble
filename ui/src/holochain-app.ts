@@ -7,12 +7,20 @@ import {
 } from '@holochain/client';
 import { contextProvider } from '@lit-labs/context';
 import '@material/mwc-circular-progress';
+import '@material/mwc-drawer';
+import '@material/mwc-dialog';
 
 import { appWebsocketContext, appInfoContext } from './contexts';
 
+import './assemble/assemble/all-offers';
+import './assemble/assemble/create-offer';
+import './assemble/assemble/offer-detail';
+
 @customElement('holochain-app')
 export class HolochainApp extends LitElement {
+
   @state() loading = true;
+  @state() _selectedOfferHash: ActionHash | undefined;
 
   @contextProvider({ context: appWebsocketContext })
   @property({ type: Object })
@@ -41,12 +49,23 @@ export class HolochainApp extends LitElement {
       `;
 
     return html`
+      <mwc-dialog id="create-offer-dialog">
+      <create-offer @offer-created=${(e: CustomEvent) => this._selectedOfferHash = e.detail.actionHash}></create-offer>
+      </mwc-dialog>
+      
       <main>
-        <h1>my-app</h1>
-
-        <div id="content"></div>
-      </main>
-    `;
+    <mwc-drawer>
+    <div>
+          <all-offers style="flex: 1;" @offer-selected=${(e: CustomEvent)=>this._selectedOfferHash = e.detail.actionHash}></all-offers>
+      <mwc-button label="Create offer" @click=${() => (this.shadowRoot?.getElementById('create-offer-dialog') as any).show()}></mwc-button>
+    </div>
+    <div slot="appContent">
+      ${this._selectedOfferHash ? 
+        html`<offer-detail .actionHash=${this._selectedOfferHash}></offer-detail>` : 
+        html`<span>Select an offer to see its detail</span>`}
+          </div>
+</mwc-drawer>
+  </main>`;
   }
 
   static styles = css`

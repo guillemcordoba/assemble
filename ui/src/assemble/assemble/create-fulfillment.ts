@@ -16,27 +16,22 @@ export class CreateFulfillment extends LitElement {
   promiseHash!: ActionHash;
 
   @state()
-  _commitmentHash: ActionHash
- | undefined;
+  _commitmentHash: ActionHash | undefined;
+  
   @state()
-  _fullfilled: boolean
- | undefined;
+  _fullfilled: boolean | undefined;
+
+    @state()
+  _promiseHash: ActionHash  | undefined;
+  
   @state()
-  _promiseHash: ActionHash
- | undefined;
-  @state()
-  _reflection: string
- | undefined;
+  _reflection: string  | undefined;
+  
   isFulfillmentValid() {
-    return 
-    	this._commitmentHash && 
-    
-    	this._fullfilled && 
-    
-    	this._promiseHash && 
-    
-    	this._reflection
-    ;
+    return     	this._commitmentHash &&   
+    	this._fullfilled &&   
+    	this._promiseHash &&     
+    	this._reflection;
   }
 
   @contextProvided({ context: appWebsocketContext })
@@ -49,12 +44,10 @@ export class CreateFulfillment extends LitElement {
     const cellData = this.appInfo.cell_data.find((c: InstalledCell) => c.role_id === 'assemble')!;
 
     const fulfillment: Fulfillment = { 
-        commitment_hash: this._commitmentHash!,
+        commitment_hash: this.commitmentHash,
         fullfilled: this._fullfilled!,
-        promise_hash: this._promiseHash!,
+        promise_hash: this.promiseHash,
         reflection: this._reflection!,
-      commitment: this.commitment!,
-      promise: this.promise!,
     };
 
     const record: Record = await this.appWebsocket.callZome({

@@ -3,4 +3,5 @@ use hdi::prelude::*;
 #[derive(Clone)]
 pub struct Promise {
     pub offer_hash: ActionHash,
+    pub commitment_hashes: Vec<ActionHash>,
 }

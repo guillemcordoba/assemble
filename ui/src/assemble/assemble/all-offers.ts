@@ -1,16 +1,20 @@
 import { LitElement, html } from 'lit';
 import { state, customElement, property } from 'lit/decorators.js';
-import { InstalledCell, AgentPubKey, Record, AppWebsocket, InstalledAppInfo } from '@holochain/client';
+import { InstalledCell, AgentPubKey, Record, AppWebsocket, InstalledAppInfo, Create } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { appWebsocketContext, appInfoContext } from '../../contexts';
 import '@material/mwc-circular-progress';
+import '@material/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import './offer-detail';
+import {RecordBag} from '@holochain-open-dev/utils';
+import { Offer } from './offer';
 
 @customElement('all-offers')
 export class AllOffers extends LitElement {
 
   @state()
-  _records: Array<Record> | undefined;
+  _records: RecordBag<Offer> | undefined;
 
   @contextProvided({ context: appWebsocketContext })
   appWebsocket!: AppWebsocket;
@@ -21,7 +25,7 @@ export class AllOffers extends LitElement {
   async firstUpdated() {
     const cellData = this.appInfo.cell_data.find((c: InstalledCell) => c.role_id === 'assemble')!;
 
-    this._records = await this.appWebsocket.callZome({
+    const records = await this.appWebsocket.callZome({
       cap_secret: null,
       cell_id: cellData.cell_id,
       zome_name: 'assemble',
@@ -29,6 +33,8 @@ export class AllOffers extends LitElement {
       payload: null,
       provenance: cellData.cell_id[1]
     });
+    
+    this._records = new RecordBag(records);
   }
 
   render() {
@@ -39,9 +45,15 @@ export class AllOffers extends LitElement {
     }
     return html`
       <div style="display: flex; flex-direction: column">
-        ${this._records.map(r => 
-          html`<offer-detail .actionHash=${r.signed_action.hashed.hash} style="margin-bottom: 16px;"></offer-detail>`
-        )}
+        <mwc-list>
+        ${this._records.actionMap.entries().map(([actionHash, a]) => html`<mwc-list-item @click=${()=> this.dispatchEvent(new CustomEvent('offer-selected', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          actionHash
+        }
+      }))}>${this._records?.entryMap.get((a as Create).entry_hash).title}</mwc-list-item>`)}
+      </mwc-list>
       </div>
     `;
   }

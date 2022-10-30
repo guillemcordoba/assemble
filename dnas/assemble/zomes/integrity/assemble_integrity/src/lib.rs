@@ -6,11 +6,16 @@ pub mod commitment;
 pub use commitment::*;
 pub mod offer;
 pub use offer::*;
+pub mod slot;
+pub use slot::*;
+
 use hdi::prelude::*;
+
 #[hdk_extern]
 pub fn validate(_op: Op) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
@@ -19,6 +24,7 @@ pub enum EntryTypes {
     Promise(Promise),
     Fulfillment(Fulfillment),
 }
+
 #[hdk_link_types]
 pub enum LinkTypes {
     OfferToCommitment,
