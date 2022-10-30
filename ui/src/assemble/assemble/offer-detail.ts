@@ -1,12 +1,12 @@
 import { LitElement, html } from 'lit';
 import { state, customElement, property } from 'lit/decorators.js';
-import { InstalledCell, AppWebsocket, Record, ActionHash, InstalledAppInfo } from '@holochain/client';
+import { InstalledCell, AppWebsocket, Record, ActionHash, InstalledAppInfo, RecordEntry } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { decode } from '@msgpack/msgpack';
 import { appInfoContext, appWebsocketContext } from '../../contexts';
 import { Offer, Slot } from './offer';
 import '@material/mwc-circular-progress';
-import { RecordBag } from '@holochain-open-dev/utils';
+import { EntryRecord, RecordBag } from '@holochain-open-dev/utils';
 import { Commitment } from './commitment';
 
 @customElement('offer-detail')
@@ -15,7 +15,7 @@ export class OfferDetail extends LitElement {
   actionHash!: ActionHash;
 
   @state()
-  _offer: Offer | undefined;
+  _offer: EntryRecord<Offer> | undefined;
 
   @state()
   _commitments: RecordBag<Commitment> | undefined;
@@ -47,17 +47,20 @@ export class OfferDetail extends LitElement {
     });
     
     this._commitments = new RecordBag(commitments);
-  
-      if (record) {
-      this._offer = decode((record.entry as any).Present.entry) as Offer;
+    
+    if (record) {
+      this._offer = new EntryRecord(record);
     }
+  }
+  
+  cellData() {
+    return this.appInfo.cell_data.find((c: InstalledCell) => c.role_id === 'assemble')!;
   }
 
   async commitForSlot(index: number) {
-    const cellData = this.appInfo.cell_data.find((c: InstalledCell) => c.role_id === 'assemble')!;
     const record: Record = await this.appWebsocket.callZome({
       cap_secret: null,
-      cell_id: cellData.cell_id,
+      cell_id: this.cellData().cell_id,
       zome_name: 'assemble',
       fn_name: 'create_commitment',
       payload: {
@@ -65,7 +68,7 @@ export class OfferDetail extends LitElement {
         fulfilling_slot_index: index,
         slots: []
       },
-      provenance: cellData.cell_id[1]
+      provenance: this.cellData().cell_id[1]
     });
     
     this._commitments?.add([record]);
@@ -73,6 +76,8 @@ export class OfferDetail extends LitElement {
   }
   
   renderSlot(s: Slot, index: number) {
+    const amIAuthor = this._offer?.action.author.toString() === this.cellData().cell_id[1].toString();
+    console.log(amIAuthor)
     const isCompleted = !!this._commitments?.entryMap.values().find(c => c.fulfilling_slot_index === index);
     
     return html`
@@ -81,10 +86,11 @@ export class OfferDetail extends LitElement {
         <span><strong>${s.title}</strong></span>
         <span>${s.description}</span>
       </div>
-      ${isCompleted ? html`<mwc-icon>verified</mwc-icon>` :
+      
+      ${amIAuthor ? html`` :  (isCompleted ? html`<mwc-icon>verified</mwc-icon>` :
         html`
       <mwc-button label="Commit" @click=${()=> this.commitForSlot(index)}></mwc-button>
-      `}
+      ` )}
       </div>
       `;
   }
@@ -100,15 +106,15 @@ export class OfferDetail extends LitElement {
         <span style="font-size: 18px">Offer</span>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Title</strong></span>
-		    <span style="white-space: pre-line">${ this._offer.title }</span>
+		    <span style="white-space: pre-line">${ this._offer.entry.title }</span>
 		  </div>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Description</strong></span>
-		    <span style="white-space: pre-line">${this._offer.description }</span>
+		    <span style="white-space: pre-line">${this._offer.entry.description }</span>
 		  </div>
       <span>Slots</span>
       
-      ${this._offer.slots.map((r, i) => this.renderSlot(r, i))}
+      ${this._offer.entry.slots.map((r, i) => this.renderSlot(r, i))}
       
       </div>
     `;

@@ -10,6 +10,7 @@ import { appWebsocketContext, appInfoContext } from './contexts';
 import './assemble/assemble/all-offers';
 import './assemble/assemble/create-offer';
 import './assemble/assemble/offer-detail';
+import './assemble/assemble/my-promises';
 let HolochainApp = class HolochainApp extends LitElement {
     constructor() {
         super(...arguments);
@@ -30,14 +31,16 @@ let HolochainApp = class HolochainApp extends LitElement {
         return html `
       <mwc-dialog id="create-offer-dialog">
       <create-offer @offer-created=${async (e) => {
-            var _a;
+            var _a, _b;
             await ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('all-offers')).firstUpdated();
             this._selectedOfferHash = e.detail.actionHash;
+            ((_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('create-offer-dialog')).close();
         }}></create-offer>
       </mwc-dialog>
       
       <main>
-    <mwc-drawer>
+      <div style="flex: 1; display: flex; flex-direction: row">
+    <mwc-drawer style="flex: 1">
     <div>
           <all-offers id="all-offers" style="flex: 1;" @offer-selected=${(e) => this._selectedOfferHash = e.detail.actionHash}></all-offers>
       <mwc-button label="Create offer" @click=${() => { var _a; return ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('create-offer-dialog')).show(); }}></mwc-button>
@@ -48,6 +51,18 @@ let HolochainApp = class HolochainApp extends LitElement {
             html `<span>Select an offer to see its detail</span>`}
           </div>
 </mwc-drawer>
+
+          <mwc-drawer style="flex: 1">
+    <div>
+          <my-promises style="flex: 1;" @promise-selected=${(e) => this._selectedPromiseHash = e.detail.promiseActionHash}></my-promises>
+    </div>
+    <div slot="appContent">
+      ${this._selectedPromiseHash ?
+            html `<promise-detail .actionHash=${this._selectedPromiseHash}></promise-detail>` :
+            html `<span>Select a promise to see its detail</span>`}
+          </div>
+</mwc-drawer>
+      </div>
   </main>`;
     }
 };
@@ -85,6 +100,9 @@ __decorate([
 __decorate([
     state()
 ], HolochainApp.prototype, "_selectedOfferHash", void 0);
+__decorate([
+    state()
+], HolochainApp.prototype, "_selectedPromiseHash", void 0);
 __decorate([
     contextProvider({ context: appWebsocketContext }),
     property({ type: Object })

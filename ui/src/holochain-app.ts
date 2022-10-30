@@ -15,12 +15,14 @@ import { appWebsocketContext, appInfoContext } from './contexts';
 import './assemble/assemble/all-offers';
 import './assemble/assemble/create-offer';
 import './assemble/assemble/offer-detail';
+import './assemble/assemble/my-promises';
 
 @customElement('holochain-app')
 export class HolochainApp extends LitElement {
 
   @state() loading = true;
   @state() _selectedOfferHash: ActionHash | undefined;
+  @state() _selectedPromiseHash: ActionHash | undefined;
 
   @contextProvider({ context: appWebsocketContext })
   @property({ type: Object })
@@ -53,11 +55,13 @@ export class HolochainApp extends LitElement {
       <create-offer @offer-created=${async (e: CustomEvent) => {
         await (this.shadowRoot?.getElementById('all-offers') as any).firstUpdated();
         this._selectedOfferHash = e.detail.actionHash;
+        (this.shadowRoot?.getElementById('create-offer-dialog') as any).close();
       }}></create-offer>
       </mwc-dialog>
       
       <main>
-    <mwc-drawer>
+      <div style="flex: 1; display: flex; flex-direction: row">
+    <mwc-drawer style="flex: 1">
     <div>
           <all-offers id="all-offers" style="flex: 1;" @offer-selected=${(e: CustomEvent)=>this._selectedOfferHash = e.detail.actionHash}></all-offers>
       <mwc-button label="Create offer" @click=${() => (this.shadowRoot?.getElementById('create-offer-dialog') as any).show()}></mwc-button>
@@ -68,6 +72,18 @@ export class HolochainApp extends LitElement {
         html`<span>Select an offer to see its detail</span>`}
           </div>
 </mwc-drawer>
+
+          <mwc-drawer style="flex: 1">
+    <div>
+          <my-promises style="flex: 1;" @promise-selected=${(e: CustomEvent)=>this._selectedPromiseHash = e.detail.promiseActionHash}></my-promises>
+    </div>
+    <div slot="appContent">
+      ${this._selectedPromiseHash ? 
+        html`<promise-detail .actionHash=${this._selectedPromiseHash}></promise-detail>` : 
+        html`<span>Select a promise to see its detail</span>`}
+          </div>
+</mwc-drawer>
+      </div>
   </main>`;
   }
 

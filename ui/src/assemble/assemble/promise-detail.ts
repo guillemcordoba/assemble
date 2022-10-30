@@ -6,6 +6,8 @@ import { decode } from '@msgpack/msgpack';
 import { appInfoContext, appWebsocketContext } from '../../contexts';
 import { Promise } from './promise';
 import '@material/mwc-circular-progress';
+import { Offer } from './offer';
+import { Slot } from './offer';
 
 @customElement('promise-detail')
 export class PromiseDetail extends LitElement {
@@ -14,6 +16,9 @@ export class PromiseDetail extends LitElement {
 
   @state()
   _promise: Promise | undefined;
+
+  @state()
+  _offer: Offer | undefined;
 
   @contextProvided({ context: appWebsocketContext })
   appWebsocket!: AppWebsocket;
@@ -30,21 +35,55 @@ export class PromiseDetail extends LitElement {
       payload: this.actionHash,
       provenance: cellData.cell_id[1]
     });
-    if (record) {
-      this._promise = decode((record.entry as any).Present.entry) as Promise;
+    if (!record) throw new Error("Couldn't get promise"); 
+
+    this._promise = decode((record.entry as any).Present.entry) as Promise;
+
+    const offer: Record | undefined = await this.appWebsocket.callZome({
+      cap_secret: null,
+      cell_id: cellData.cell_id,
+      zome_name: 'assemble',
+      fn_name: 'get_offer',
+      payload: this._promise.offer_hash,
+      provenance: cellData.cell_id[1]
+    });
+    if (offer) {
+      this._offer = decode((offer.entry as any).Present.entry) as Offer;
     }
+  }
+  
+  renderSlot(s: Slot) {    
+    return html`
+      <div style="display: flex; flex-direction: row">
+      <div style="display: flex; flex-direction:column">
+        <span><strong>${s.title}</strong></span>
+        <span>${s.description}</span>
+      </div>
+      </div>
+      `;
   }
 
   render() {
-    if (!this._promise) {
+    if (!this._offer) {
       return html`<div style="display: flex; flex: 1; align-items: center; justify-content: center">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
     }
     return html`
       <div style="display: flex; flex-direction: column">
-        <span style="font-size: 18px">Promise</span>
-		  <!-- TODO: implement the rendering of offer_hash -->
+        <span style="font-size: 18px">Offer</span>
+		  <div style="display: flex; flex-direction: column">
+		    <span><strong>Title</strong></span>
+		    <span style="white-space: pre-line">${ this._offer.title }</span>
+		  </div>
+		  <div style="display: flex; flex-direction: column">
+		    <span><strong>Description</strong></span>
+		    <span style="white-space: pre-line">${this._offer.description }</span>
+		  </div>
+      <span>Slots</span>
+      
+      ${this._offer.slots.map((r) => this.renderSlot(r))}
+      
       </div>
     `;
   }

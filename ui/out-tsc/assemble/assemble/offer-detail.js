@@ -2,10 +2,9 @@ import { __decorate } from "tslib";
 import { LitElement, html } from 'lit';
 import { state, customElement, property } from 'lit/decorators.js';
 import { contextProvided } from '@lit-labs/context';
-import { decode } from '@msgpack/msgpack';
 import { appInfoContext, appWebsocketContext } from '../../contexts';
 import '@material/mwc-circular-progress';
-import { RecordBag } from '@holochain-open-dev/utils';
+import { EntryRecord, RecordBag } from '@holochain-open-dev/utils';
 let OfferDetail = class OfferDetail extends LitElement {
     async firstUpdated() {
         const cellData = this.appInfo.cell_data.find((c) => c.role_id === 'assemble');
@@ -27,15 +26,17 @@ let OfferDetail = class OfferDetail extends LitElement {
         });
         this._commitments = new RecordBag(commitments);
         if (record) {
-            this._offer = decode(record.entry.Present.entry);
+            this._offer = new EntryRecord(record);
         }
+    }
+    cellData() {
+        return this.appInfo.cell_data.find((c) => c.role_id === 'assemble');
     }
     async commitForSlot(index) {
         var _a;
-        const cellData = this.appInfo.cell_data.find((c) => c.role_id === 'assemble');
         const record = await this.appWebsocket.callZome({
             cap_secret: null,
-            cell_id: cellData.cell_id,
+            cell_id: this.cellData().cell_id,
             zome_name: 'assemble',
             fn_name: 'create_commitment',
             payload: {
@@ -43,24 +44,27 @@ let OfferDetail = class OfferDetail extends LitElement {
                 fulfilling_slot_index: index,
                 slots: []
             },
-            provenance: cellData.cell_id[1]
+            provenance: this.cellData().cell_id[1]
         });
         (_a = this._commitments) === null || _a === void 0 ? void 0 : _a.add([record]);
         this.requestUpdate();
     }
     renderSlot(s, index) {
-        var _a;
-        const isCompleted = !!((_a = this._commitments) === null || _a === void 0 ? void 0 : _a.entryMap.values().find(c => c.fulfilling_slot_index === index));
+        var _a, _b;
+        const amIAuthor = ((_a = this._offer) === null || _a === void 0 ? void 0 : _a.action.author.toString()) === this.cellData().cell_id[1].toString();
+        console.log(amIAuthor);
+        const isCompleted = !!((_b = this._commitments) === null || _b === void 0 ? void 0 : _b.entryMap.values().find(c => c.fulfilling_slot_index === index));
         return html `
       <div style="display: flex; flex-direction: row">
       <div style="display: flex; flex-direction:column">
         <span><strong>${s.title}</strong></span>
         <span>${s.description}</span>
       </div>
-      ${isCompleted ? html `<mwc-icon>verified</mwc-icon>` :
+      
+      ${amIAuthor ? html `` : (isCompleted ? html `<mwc-icon>verified</mwc-icon>` :
             html `
       <mwc-button label="Commit" @click=${() => this.commitForSlot(index)}></mwc-button>
-      `}
+      `)}
       </div>
       `;
     }
@@ -75,15 +79,15 @@ let OfferDetail = class OfferDetail extends LitElement {
         <span style="font-size: 18px">Offer</span>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Title</strong></span>
-		    <span style="white-space: pre-line">${this._offer.title}</span>
+		    <span style="white-space: pre-line">${this._offer.entry.title}</span>
 		  </div>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Description</strong></span>
-		    <span style="white-space: pre-line">${this._offer.description}</span>
+		    <span style="white-space: pre-line">${this._offer.entry.description}</span>
 		  </div>
       <span>Slots</span>
       
-      ${this._offer.slots.map((r, i) => this.renderSlot(r, i))}
+      ${this._offer.entry.slots.map((r, i) => this.renderSlot(r, i))}
       
       </div>
     `;

@@ -92,6 +92,15 @@ pub fn create_promise(offer_hash: ActionHash) -> ExternResult<Record> {
         create_link(p, promise_hash.clone(), LinkTypes::AgentPubKeyToPromise, ())?;
     }
 
+    let path = Path::from("all_offers");
+    let links = get_links(path.path_entry_hash()?, LinkTypes::AllOffers, None)?;
+
+    for l in links {
+        if ActionHash::from(l.target).eq(&promise.offer_hash) {
+            delete_link(l.create_link_hash)?;
+        }
+    }
+
     let record = get(promise_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
         WasmErrorInner::Guest(String::from("Could not find the newly created Promise"))
     ))?;
@@ -115,14 +124,41 @@ pub fn get_promise_for_offer(offer_hash: ActionHash) -> ExternResult<Vec<Record>
     Ok(record)
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetMyPromisesOutput {
+    promises: Vec<Record>,
+    offers: Vec<Record>,
+}
 #[hdk_extern]
-pub fn get_promises_for_agentt(agent_pub_key: AgentPubKey) -> ExternResult<Vec<Record>> {
+pub fn get_my_promises(_: ()) -> ExternResult<GetMyPromisesOutput> {
+    let agent_pub_key = agent_info()?.agent_latest_pubkey;
+
     let links = get_links(agent_pub_key, LinkTypes::AgentPubKeyToPromise, None)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(ActionHash::from(link.target).into(), GetOptions::default()))
         .collect();
     let maybe_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
-    let record: Vec<Record> = maybe_records.into_iter().filter_map(|r| r).collect();
-    Ok(record)
+    let promises_records: Vec<Record> = maybe_records.into_iter().filter_map(|r| r).collect();
+    let promises: Vec<Promise> = promises_records
+        .clone()
+        .into_iter()
+        .map(|r| r.entry().to_app_option::<Promise>())
+        .collect::<Result<Vec<Option<Promise>>, SerializedBytesError>>()
+        .map_err(|e| wasm_error!(e.into()))?
+        .into_iter()
+        .filter_map(|p| p)
+        .collect();
+
+    let get_input: Vec<GetInput> = promises
+        .into_iter()
+        .map(|p| GetInput::new(p.offer_hash.into(), GetOptions::default()))
+        .collect();
+    let maybe_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
+    let records: Vec<Record> = maybe_records.into_iter().filter_map(|r| r).collect();
+
+    Ok(GetMyPromisesOutput {
+        promises: promises_records,
+        offers: records,
+    })
 }

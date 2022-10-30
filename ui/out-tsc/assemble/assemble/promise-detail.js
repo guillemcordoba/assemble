@@ -16,20 +16,52 @@ let PromiseDetail = class PromiseDetail extends LitElement {
             payload: this.actionHash,
             provenance: cellData.cell_id[1]
         });
-        if (record) {
-            this._promise = decode(record.entry.Present.entry);
+        if (!record)
+            throw new Error("Couldn't get promise");
+        this._promise = decode(record.entry.Present.entry);
+        const offer = await this.appWebsocket.callZome({
+            cap_secret: null,
+            cell_id: cellData.cell_id,
+            zome_name: 'assemble',
+            fn_name: 'get_offer',
+            payload: this._promise.offer_hash,
+            provenance: cellData.cell_id[1]
+        });
+        if (offer) {
+            this._offer = decode(offer.entry.Present.entry);
         }
     }
+    renderSlot(s) {
+        return html `
+      <div style="display: flex; flex-direction: row">
+      <div style="display: flex; flex-direction:column">
+        <span><strong>${s.title}</strong></span>
+        <span>${s.description}</span>
+      </div>
+      </div>
+      `;
+    }
     render() {
-        if (!this._promise) {
+        if (!this._offer) {
             return html `<div style="display: flex; flex: 1; align-items: center; justify-content: center">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
         }
         return html `
       <div style="display: flex; flex-direction: column">
-        <span style="font-size: 18px">Promise</span>
-		  <!-- TODO: implement the rendering of offer_hash -->
+        <span style="font-size: 18px">Offer</span>
+		  <div style="display: flex; flex-direction: column">
+		    <span><strong>Title</strong></span>
+		    <span style="white-space: pre-line">${this._offer.title}</span>
+		  </div>
+		  <div style="display: flex; flex-direction: column">
+		    <span><strong>Description</strong></span>
+		    <span style="white-space: pre-line">${this._offer.description}</span>
+		  </div>
+      <span>Slots</span>
+      
+      ${this._offer.slots.map((r) => this.renderSlot(r))}
+      
       </div>
     `;
     }
@@ -40,6 +72,9 @@ __decorate([
 __decorate([
     state()
 ], PromiseDetail.prototype, "_promise", void 0);
+__decorate([
+    state()
+], PromiseDetail.prototype, "_offer", void 0);
 __decorate([
     contextProvided({ context: appWebsocketContext })
 ], PromiseDetail.prototype, "appWebsocket", void 0);
