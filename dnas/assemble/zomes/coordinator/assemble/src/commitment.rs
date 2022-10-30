@@ -1,8 +1,6 @@
 use assemble_integrity::*;
 use hdk::prelude::*;
 
-use crate::promise::create_promise;
-
 #[hdk_extern]
 pub fn create_commitment(commitment: Commitment) -> ExternResult<Record> {
     let commitment_hash = create_entry(&EntryTypes::Commitment(commitment.clone()))?;
@@ -15,8 +13,6 @@ pub fn create_commitment(commitment: Commitment) -> ExternResult<Record> {
     let record = get(commitment_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
         WasmErrorInner::Guest(String::from("Could not find the newly created Commitment"))
     ))?;
-
-    let _r = create_promise(commitment.offer_or_commitment_hash);
 
     Ok(record)
 }

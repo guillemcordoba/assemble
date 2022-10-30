@@ -53,9 +53,14 @@ export class HolochainApp extends LitElement {
     return html`
       <mwc-dialog id="create-offer-dialog">
       <create-offer @offer-created=${async (e: CustomEvent) => {
-        await (this.shadowRoot?.getElementById('all-offers') as any).firstUpdated();
         this._selectedOfferHash = e.detail.actionHash;
+
+        setTimeout(async ()=> {
+          
+                await (this.shadowRoot?.getElementById('all-offers') as any).firstUpdated();
         (this.shadowRoot?.getElementById('create-offer-dialog') as any).close();
+        await (this.shadowRoot?.getElementById('offer-detail') as any)?.firstUpdated();
+        })
       }}></create-offer>
       </mwc-dialog>
       
@@ -63,23 +68,44 @@ export class HolochainApp extends LitElement {
       <div style="flex: 1; display: flex; flex-direction: row">
     <mwc-drawer style="flex: 1">
     <div>
-          <all-offers id="all-offers" style="flex: 1;" @offer-selected=${(e: CustomEvent)=>this._selectedOfferHash = e.detail.actionHash}></all-offers>
+          <all-offers id="all-offers" style="flex: 1;" @offer-selected=${async (e: CustomEvent)=>{
+        this._selectedOfferHash = e.detail.actionHash;
+        
+        setTimeout(async ()=> {
+          
+        
+        await (this.shadowRoot?.getElementById('offer-detail') as any)?.firstUpdated();
+     }) }}></all-offers>
       <mwc-button label="Create offer" @click=${() => (this.shadowRoot?.getElementById('create-offer-dialog') as any).show()}></mwc-button>
     </div>
     <div slot="appContent">
       ${this._selectedOfferHash ? 
-        html`<offer-detail .actionHash=${this._selectedOfferHash}></offer-detail>` : 
+        html`<offer-detail id="offer-detail" .actionHash=${this._selectedOfferHash} @offer-completed=${async ()=> {
+          this._selectedOfferHash = undefined;
+          
+                    
+          setTimeout(async () => {
+          await (this.shadowRoot?.getElementById('all-offers') as any).firstUpdated();
+          await (this.shadowRoot?.getElementById('my-promises') as any).firstUpdated();
+
+          await (this.shadowRoot?.getElementById('offer-detail') as any)?.firstUpdated();
+          })
+        }}></offer-detail>` : 
         html`<span>Select an offer to see its detail</span>`}
           </div>
 </mwc-drawer>
 
           <mwc-drawer style="flex: 1">
     <div>
-          <my-promises style="flex: 1;" @promise-selected=${(e: CustomEvent)=>this._selectedPromiseHash = e.detail.promiseActionHash}></my-promises>
+          <my-promises id="my-promises" style="flex: 1;" @promise-selected=${async (e: CustomEvent)=>{
+        this._selectedPromiseHash = e.detail.promiseActionHash;
+          setTimeout(async () => {
+           await (this.shadowRoot?.getElementById('promise-detail') as any)?.firstUpdated();
+     }) }}></my-promises>
     </div>
     <div slot="appContent">
       ${this._selectedPromiseHash ? 
-        html`<promise-detail .actionHash=${this._selectedPromiseHash}></promise-detail>` : 
+        html`<promise-detail id="promise-detail" .actionHash=${this._selectedPromiseHash}></promise-detail>` : 
         html`<span>Select a promise to see its detail</span>`}
           </div>
 </mwc-drawer>

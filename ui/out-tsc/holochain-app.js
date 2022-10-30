@@ -31,10 +31,13 @@ let HolochainApp = class HolochainApp extends LitElement {
         return html `
       <mwc-dialog id="create-offer-dialog">
       <create-offer @offer-created=${async (e) => {
-            var _a, _b;
-            await ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('all-offers')).firstUpdated();
             this._selectedOfferHash = e.detail.actionHash;
-            ((_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('create-offer-dialog')).close();
+            setTimeout(async () => {
+                var _a, _b, _c, _d;
+                await ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('all-offers')).firstUpdated();
+                ((_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('create-offer-dialog')).close();
+                await ((_d = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('offer-detail')) === null || _d === void 0 ? void 0 : _d.firstUpdated());
+            });
         }}></create-offer>
       </mwc-dialog>
       
@@ -42,23 +45,43 @@ let HolochainApp = class HolochainApp extends LitElement {
       <div style="flex: 1; display: flex; flex-direction: row">
     <mwc-drawer style="flex: 1">
     <div>
-          <all-offers id="all-offers" style="flex: 1;" @offer-selected=${(e) => this._selectedOfferHash = e.detail.actionHash}></all-offers>
+          <all-offers id="all-offers" style="flex: 1;" @offer-selected=${async (e) => {
+            this._selectedOfferHash = e.detail.actionHash;
+            setTimeout(async () => {
+                var _a, _b;
+                await ((_b = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('offer-detail')) === null || _b === void 0 ? void 0 : _b.firstUpdated());
+            });
+        }}></all-offers>
       <mwc-button label="Create offer" @click=${() => { var _a; return ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('create-offer-dialog')).show(); }}></mwc-button>
     </div>
     <div slot="appContent">
       ${this._selectedOfferHash ?
-            html `<offer-detail .actionHash=${this._selectedOfferHash}></offer-detail>` :
+            html `<offer-detail id="offer-detail" .actionHash=${this._selectedOfferHash} @offer-completed=${async () => {
+                this._selectedOfferHash = undefined;
+                setTimeout(async () => {
+                    var _a, _b, _c, _d;
+                    await ((_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('all-offers')).firstUpdated();
+                    await ((_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('my-promises')).firstUpdated();
+                    await ((_d = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('offer-detail')) === null || _d === void 0 ? void 0 : _d.firstUpdated());
+                });
+            }}></offer-detail>` :
             html `<span>Select an offer to see its detail</span>`}
           </div>
 </mwc-drawer>
 
           <mwc-drawer style="flex: 1">
     <div>
-          <my-promises style="flex: 1;" @promise-selected=${(e) => this._selectedPromiseHash = e.detail.promiseActionHash}></my-promises>
+          <my-promises id="my-promises" style="flex: 1;" @promise-selected=${async (e) => {
+            this._selectedPromiseHash = e.detail.promiseActionHash;
+            setTimeout(async () => {
+                var _a, _b;
+                await ((_b = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('promise-detail')) === null || _b === void 0 ? void 0 : _b.firstUpdated());
+            });
+        }}></my-promises>
     </div>
     <div slot="appContent">
       ${this._selectedPromiseHash ?
-            html `<promise-detail .actionHash=${this._selectedPromiseHash}></promise-detail>` :
+            html `<promise-detail id="promise-detail" .actionHash=${this._selectedPromiseHash}></promise-detail>` :
             html `<span>Select a promise to see its detail</span>`}
           </div>
 </mwc-drawer>

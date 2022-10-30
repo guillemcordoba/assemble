@@ -71,6 +71,25 @@ export class OfferDetail extends LitElement {
       provenance: this.cellData().cell_id[1]
     });
     
+    try {
+    const promise: Record = await this.appWebsocket.callZome({
+      cap_secret: null,
+      cell_id: this.cellData().cell_id,
+      zome_name: 'assemble',
+      fn_name: 'create_promise',
+      payload: this.actionHash,
+      provenance: this.cellData().cell_id[1]
+    });
+      this.dispatchEvent(new CustomEvent('offer-completed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          promiseActionHash: promise.signed_action.hashed.hash
+        }
+      }))
+      } catch (e) {
+      
+    }
     this._commitments?.add([record]);
     this.requestUpdate();  
   }
