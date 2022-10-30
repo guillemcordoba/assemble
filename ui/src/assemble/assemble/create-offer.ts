@@ -3,7 +3,7 @@ import { state, customElement, property } from 'lit/decorators.js';
 import { InstalledCell, ActionHash, Record, AppWebsocket, InstalledAppInfo } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { appWebsocketContext, appInfoContext } from '../../contexts';
-import { Offer } from './offer';
+import { Offer, Slot } from './offer';
 import '@material/mwc-button';
 import '@material/mwc-textarea';
 import '@material/mwc-textfield';
@@ -17,10 +17,15 @@ export class CreateOffer extends LitElement {
   @state()
   _title: string | undefined;
   
+  @state()
+  _slots: Slot[] = [{
+    title: '',
+    description: '',
+    required: true
+  }];
+  
   isOfferValid() {
-    return     	this._description &&    
-    	this._title
-    ;
+    return this._description && this._title;
   }
 
   @contextProvided({ context: appWebsocketContext })
@@ -35,7 +40,7 @@ export class CreateOffer extends LitElement {
     const offer: Offer = { 
         description: this._description!,
         title: this._title!,
-      slots: []
+      slots: this._slots
     };
 
     const record: Record = await this.appWebsocket.callZome({
@@ -55,16 +60,33 @@ export class CreateOffer extends LitElement {
       }
     }));
   }
+  
+  renderSlot(s: Slot) {
+    return html`
+        
+          <mwc-textfield outlined label="Title" @input=${(e: CustomEvent) => { s.title = (e.target as any).value; } }></mwc-textfield>
+
+          <mwc-textarea outlined label="Description" @input=${(e: CustomEvent) => { s.description = (e.target as any).value;} }></mwc-textarea>
+      
+      `;
+  }
 
   render() {
     return html`
       <div style="display: flex; flex-direction: column">
         <span style="font-size: 18px">Create Offer</span>
 
-          <mwc-textarea outlined label="" @input=${(e: CustomEvent) => { this._description = (e.target as any).value;} }></mwc-textarea>
-          <mwc-textfield outlined label="" @input=${(e: CustomEvent) => { this._title = (e.target as any).value; } }></mwc-textfield>
+          <mwc-textfield outlined label="Title" @input=${(e: CustomEvent) => { this._title = (e.target as any).value; } }></mwc-textfield>
 
-        <mwc-button 
+          <mwc-textarea outlined label="Description" @input=${(e: CustomEvent) => { this._description = (e.target as any).value;} }></mwc-textarea>
+
+      <span>Slots</span>
+      
+      ${this._slots.map(s => this.renderSlot(s))}
+      <mwc-button icon="add" label="Add slot" @click=${()=> this._slots = [...this._slots, {title: '', description: '', required: true}]}></mwc-button>
+      
+      <mwc-button 
+      raised
           label="Create Offer"
           .disabled=${!this.isOfferValid()}
           @click=${() => this.createOffer()}

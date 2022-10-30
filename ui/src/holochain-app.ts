@@ -50,13 +50,16 @@ export class HolochainApp extends LitElement {
 
     return html`
       <mwc-dialog id="create-offer-dialog">
-      <create-offer @offer-created=${(e: CustomEvent) => this._selectedOfferHash = e.detail.actionHash}></create-offer>
+      <create-offer @offer-created=${async (e: CustomEvent) => {
+        await (this.shadowRoot?.getElementById('all-offers') as any).firstUpdated();
+        this._selectedOfferHash = e.detail.actionHash;
+      }}></create-offer>
       </mwc-dialog>
       
       <main>
     <mwc-drawer>
     <div>
-          <all-offers style="flex: 1;" @offer-selected=${(e: CustomEvent)=>this._selectedOfferHash = e.detail.actionHash}></all-offers>
+          <all-offers id="all-offers" style="flex: 1;" @offer-selected=${(e: CustomEvent)=>this._selectedOfferHash = e.detail.actionHash}></all-offers>
       <mwc-button label="Create offer" @click=${() => (this.shadowRoot?.getElementById('create-offer-dialog') as any).show()}></mwc-button>
     </div>
     <div slot="appContent">
