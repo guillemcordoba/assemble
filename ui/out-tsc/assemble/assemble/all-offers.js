@@ -27,6 +27,8 @@ let AllOffers = class AllOffers extends LitElement {
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
         }
+        if (this._records.entryRecords.length === 0)
+            return html `<span>There are no offers yet</span>`;
         return html `
       <div style="display: flex; flex-direction: column">
         <mwc-list>

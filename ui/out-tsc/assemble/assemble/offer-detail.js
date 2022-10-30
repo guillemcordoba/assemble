@@ -68,11 +68,17 @@ let OfferDetail = class OfferDetail extends LitElement {
         (_a = this._commitments) === null || _a === void 0 ? void 0 : _a.add([record]);
         this.requestUpdate();
     }
-    renderSlot(s, index) {
+    renderSlotAction(s, index) {
         var _a, _b;
         const amIAuthor = ((_a = this._offer) === null || _a === void 0 ? void 0 : _a.action.author.toString()) === this.cellData().cell_id[1].toString();
-        console.log(amIAuthor);
         const isCompleted = !!((_b = this._commitments) === null || _b === void 0 ? void 0 : _b.entryMap.values().find(c => c.fulfilling_slot_index === index));
+        if (isCompleted)
+            return html `<mwc-icon>verified</mwc-icon>`;
+        if (amIAuthor)
+            return html `<span>Pending</span>`;
+        return html `<mwc-button label="Commit" @click=${() => this.commitForSlot(index)}></mwc-button>`;
+    }
+    renderSlot(s, index) {
         return html `
       <div style="display: flex; flex-direction: row">
       <div style="display: flex; flex-direction:column">
@@ -80,10 +86,7 @@ let OfferDetail = class OfferDetail extends LitElement {
         <span>${s.description}</span>
       </div>
       
-      ${amIAuthor ? html `` : (isCompleted ? html `<mwc-icon>verified</mwc-icon>` :
-            html `
-      <mwc-button label="Commit" @click=${() => this.commitForSlot(index)}></mwc-button>
-      `)}
+      ${this.renderSlotAction(s, index)}
       </div>
       `;
     }
@@ -94,7 +97,7 @@ let OfferDetail = class OfferDetail extends LitElement {
       </div>`;
         }
         return html `
-      <div style="display: flex; flex-direction: column">
+      <div style="display: flex; flex-direction: column; text-align: left">
         <span style="font-size: 18px">Offer</span>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Title</strong></span>
@@ -104,7 +107,7 @@ let OfferDetail = class OfferDetail extends LitElement {
 		    <span><strong>Description</strong></span>
 		    <span style="white-space: pre-line">${this._offer.entry.description}</span>
 		  </div>
-      <span>Slots</span>
+      <span style="margin-top: 16px">Slots</span>
       
       ${this._offer.entry.slots.map((r, i) => this.renderSlot(r, i))}
       

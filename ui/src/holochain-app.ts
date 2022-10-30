@@ -67,7 +67,7 @@ export class HolochainApp extends LitElement {
       <main>
       <div style="flex: 1; display: flex; flex-direction: row">
     <mwc-drawer style="flex: 1">
-    <div>
+    <div style="height: 100%; display: flex; flex-direction: column">
           <all-offers id="all-offers" style="flex: 1;" @offer-selected=${async (e: CustomEvent)=>{
         this._selectedOfferHash = e.detail.actionHash;
         
@@ -96,7 +96,7 @@ export class HolochainApp extends LitElement {
 </mwc-drawer>
 
           <mwc-drawer style="flex: 1">
-    <div>
+    <div style="height: 100%; display: flex; flex-direction: column">
           <my-promises id="my-promises" style="flex: 1;" @promise-selected=${async (e: CustomEvent)=>{
         this._selectedPromiseHash = e.detail.promiseActionHash;
           setTimeout(async () => {
@@ -118,17 +118,17 @@ export class HolochainApp extends LitElement {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: flex-start;
       font-size: calc(10px + 2vmin);
       color: #1a2b42;
-      max-width: 960px;
-      margin: 0 auto;
+      width: 100%;
+      margin: 0;
       text-align: center;
       background-color: var(--lit-element-background-color);
     }
 
     main {
+      display: flex;
       flex-grow: 1;
     }
 

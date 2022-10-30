@@ -99,7 +99,7 @@ export class OfferDetail extends LitElement {
     const isCompleted = !!this._commitments?.entryMap.values().find(c => c.fulfilling_slot_index === index);
 
     if (isCompleted) return html`<mwc-icon>verified</mwc-icon>`;
-    if (amIAuthor) return html``;
+    if (amIAuthor) return html`<span>Pending</span>`;
     return html`<mwc-button label="Commit" @click=${()=> this.commitForSlot(index)}></mwc-button>`;    
   }
   
@@ -124,7 +124,7 @@ export class OfferDetail extends LitElement {
       </div>`;
     }
     return html`
-      <div style="display: flex; flex-direction: column">
+      <div style="display: flex; flex-direction: column; text-align: left">
         <span style="font-size: 18px">Offer</span>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Title</strong></span>
@@ -134,7 +134,7 @@ export class OfferDetail extends LitElement {
 		    <span><strong>Description</strong></span>
 		    <span style="white-space: pre-line">${this._offer.entry.description }</span>
 		  </div>
-      <span>Slots</span>
+      <span style="margin-top: 16px">Slots</span>
       
       ${this._offer.entry.slots.map((r, i) => this.renderSlot(r, i))}
       

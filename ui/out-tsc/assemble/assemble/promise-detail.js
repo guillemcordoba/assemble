@@ -48,7 +48,7 @@ let PromiseDetail = class PromiseDetail extends LitElement {
       </div>`;
         }
         return html `
-      <div style="display: flex; flex-direction: column">
+      <div style="display: flex; flex-direction: column; text-align: left">
         <span style="font-size: 18px">Offer</span>
 		  <div style="display: flex; flex-direction: column">
 		    <span><strong>Title</strong></span>
@@ -58,7 +58,7 @@ let PromiseDetail = class PromiseDetail extends LitElement {
 		    <span><strong>Description</strong></span>
 		    <span style="white-space: pre-line">${this._offer.description}</span>
 		  </div>
-      <span>Slots</span>
+      <span style="margin-top: 16px">Slots</span>
       
       ${this._offer.slots.map((r) => this.renderSlot(r))}
       
