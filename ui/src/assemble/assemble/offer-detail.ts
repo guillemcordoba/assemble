@@ -94,10 +94,16 @@ export class OfferDetail extends LitElement {
     this.requestUpdate();  
   }
   
-  renderSlot(s: Slot, index: number) {
+  renderSlotAction(s: Slot, index: number) {
     const amIAuthor = this._offer?.action.author.toString() === this.cellData().cell_id[1].toString();
-    console.log(amIAuthor)
     const isCompleted = !!this._commitments?.entryMap.values().find(c => c.fulfilling_slot_index === index);
+
+    if (isCompleted) return html`<mwc-icon>verified</mwc-icon>`;
+    if (amIAuthor) return html``;
+    return html`<mwc-button label="Commit" @click=${()=> this.commitForSlot(index)}></mwc-button>`;    
+  }
+  
+  renderSlot(s: Slot, index: number) {
     
     return html`
       <div style="display: flex; flex-direction: row">
@@ -106,10 +112,7 @@ export class OfferDetail extends LitElement {
         <span>${s.description}</span>
       </div>
       
-      ${amIAuthor ? html`` :  (isCompleted ? html`<mwc-icon>verified</mwc-icon>` :
-        html`
-      <mwc-button label="Commit" @click=${()=> this.commitForSlot(index)}></mwc-button>
-      ` )}
+      ${this.renderSlotAction(s, index)}
       </div>
       `;
   }

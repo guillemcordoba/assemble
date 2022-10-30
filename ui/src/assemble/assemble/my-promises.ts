@@ -50,6 +50,8 @@ export class MyPromises extends LitElement {
       </div>`;
     }
 
+    if (this._offers.entryRecords.length === 0) return html`<span>There are no promises yet</span>`;
+
     return html`
       <div style="display: flex; flex-direction: column">
         <mwc-list>
