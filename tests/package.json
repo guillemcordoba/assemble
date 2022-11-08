@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "TEST_EXTENSIONS=.test.ts ts-node-test src"
+    "test": "TEST_EXTENSIONS=.test.ts ts-node-test src | tap-diff"
   },
   "author": "",
   "license": "CAL-1.0",
